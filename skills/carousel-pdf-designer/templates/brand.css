@@ -1,0 +1,270 @@
+/* ============================================================
+   Brand carousel / PDF design system
+   One file, shared by every carousel and every PDF guide.
+   Canvas: 1080x1350 (4:5). Hebrew RTL. Heebo.
+   Change brand values ONLY here (or override per carousel in a <style> block).
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=block");
+
+/* Local fallback so rendering works offline: drop Heebo-Variable.ttf into assets/fonts/ */
+@font-face {
+  font-family: "Heebo Local";
+  src: url("../../../assets/fonts/Heebo-Variable.ttf") format("truetype"), url("./fonts/Heebo-Variable.ttf") format("truetype");
+  font-weight: 100 900;
+}
+
+:root {
+  /* --- surfaces (tinted toward the accent, never pure #000) --- */
+  --bg: #0a0e1a;
+  --bg-2: #111727;
+  --surface: #161d30;
+  --surface-2: #1d2640;
+  --line: rgba(255, 255, 255, 0.09);
+
+  /* --- text --- */
+  --ink: #f4f6fb;
+  --ink-2: #b9c1d6;
+  --ink-3: #7c86a2;
+
+  /* --- one accent per carousel (set data-theme on <body>) --- */
+  --accent: #00d4ff;
+  --accent-ink: #001218;          /* text sitting ON the accent */
+  --accent-soft: rgba(0, 212, 255, 0.14);
+  --accent-glow: rgba(0, 212, 255, 0.45);
+
+  /* --- semantic, only for wrong/right logic --- */
+  --wrong: #ff6c00;
+  --right: #7cfc3a;
+
+  /* --- type --- */
+  --font: "Heebo", "Heebo Local", "Arial Hebrew", "Rubik", sans-serif;
+  --t-hero: 132px;   /* hook / one giant word */
+  --t-stat: 220px;   /* stat-hero number */
+  --t-h1: 84px;      /* slide title */
+  --t-h2: 60px;
+  --t-body: 42px;
+  --t-small: 32px;
+  --t-micro: 28px;   /* nothing smaller than this ever ships (≈10pt on a phone) */
+
+  /* --- spacing (8px base) --- */
+  --pad-x: 88px;
+  --pad-top: 120px;
+  --pad-bottom: 130px;
+  --gap-1: 8px; --gap-2: 16px; --gap-3: 24px; --gap-4: 32px; --gap-5: 48px; --gap-6: 64px; --gap-7: 96px;
+  /* ONE radius system: cards = --radius, anything inside a card = --radius-sm, pills only for kicker */
+  --radius: 32px;
+  --radius-sm: 20px;
+
+  --handle: "@your_handle";
+}
+
+body[data-theme="amber"]  { --accent: #ffa046; --accent-ink: #1a0d00; --accent-soft: rgba(255,160,70,.15); --accent-glow: rgba(255,160,70,.45); }
+body[data-theme="green"]  { --accent: #7cfc3a; --accent-ink: #0b1a02; --accent-soft: rgba(124,252,58,.14); --accent-glow: rgba(124,252,58,.42); }
+body[data-theme="orange"] { --accent: #ff6c00; --accent-ink: #1a0a00; --accent-soft: rgba(255,108,0,.15); --accent-glow: rgba(255,108,0,.45); }
+body[data-theme="rust"]   { --bg: #120b0a; --bg-2: #1b1110; --surface: #241614; --surface-2: #2e1c19; --accent: #e0563f; --accent-ink: #1a0603; --accent-soft: rgba(224,86,63,.15); --accent-glow: rgba(224,86,63,.45); }
+
+/* ============================================================ base */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+@page { margin: 0; }
+html, body { background: #05070d; }
+body {
+  font-family: var(--font);
+  color: var(--ink);
+  direction: rtl;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "tnum" 0;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+bdi, .num { unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
+.ltr { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+
+/* ============================================================ slide shell */
+.slide {
+  position: relative;
+  width: 1080px;
+  height: 1350px;
+  overflow: hidden;
+  break-after: page;
+  page-break-after: always;
+  display: flex;
+  flex-direction: column;
+  padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+  background:
+    radial-gradient(900px 700px at var(--glow-x, 50%) var(--glow-y, 38%), var(--accent-soft), transparent 70%),
+    linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 60%);
+}
+.slide.story { height: 1920px; }          /* 9:16 reels / stories */
+.slide.a4    { width: 1240px; height: 1754px; padding: 140px 120px; } /* PDF guide page */
+
+/* film grain + vignette: depth instead of a flat fill */
+.slide::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(0,0,0,.55) 100%);
+}
+.slide::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0; opacity: .07; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+.slide > * { position: relative; z-index: 1; }
+
+/* full-bleed photo slide (hook / ending): image + dark scrim so text always reads */
+.slide.photo { background: var(--bg); }
+.slide.photo > .bg { position: absolute; inset: 0; z-index: 0; }
+.slide.photo > .bg img { width: 100%; height: 100%; object-fit: cover; object-position: var(--focus, 50% 70%); }
+.slide.photo > .bg::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(5,7,13,.92) 0%, rgba(5,7,13,.55) 38%, rgba(5,7,13,0) 60%, rgba(5,7,13,.65) 100%);
+}
+
+/* ============================================================ chrome: branding row, counter, swipe */
+.brand {
+  position: absolute; top: 48px; inset-inline: var(--pad-x);
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: var(--t-micro); font-weight: 700; color: var(--ink-2); letter-spacing: .02em;
+}
+.brand .logo { display: flex; align-items: center; gap: 14px; font-weight: 900; letter-spacing: .14em; color: var(--ink); }
+.brand .logo img { height: 46px; }
+.brand .handle { direction: ltr; }
+.counter {
+  /* physical sides on purpose: the counter is LTR text inside an RTL slide */
+  position: absolute; bottom: 56px; right: var(--pad-x);
+  font-size: var(--t-micro); font-weight: 700; color: var(--ink-3); direction: ltr;
+}
+.counter b { color: var(--ink); }
+.swipe {
+  position: absolute; bottom: 52px; left: var(--pad-x);
+  display: flex; align-items: center; gap: 12px; font-size: var(--t-micro); font-weight: 800; color: var(--accent);
+}
+.swipe::after { content: "←"; font-size: 40px; line-height: 1; }
+
+/* ============================================================ type */
+.kicker {
+  display: inline-flex; align-self: flex-start; align-items: center; gap: 12px;
+  padding: 12px 26px; border-radius: 999px;
+  background: var(--accent-soft); color: var(--accent);
+  font-size: var(--t-micro); font-weight: 800; letter-spacing: .04em;
+  margin-bottom: var(--gap-4);
+}
+.hero  { font-size: var(--t-hero); font-weight: 900; line-height: 1.02; letter-spacing: -0.02em; text-wrap: balance; }
+.h1    { font-size: var(--t-h1);   font-weight: 900; line-height: 1.08; letter-spacing: -0.015em; text-wrap: balance; }
+.h2    { font-size: var(--t-h2);   font-weight: 800; line-height: 1.15; text-wrap: balance; }
+.body  { font-size: var(--t-body); font-weight: 400; line-height: 1.45; color: var(--ink-2); text-wrap: pretty; max-width: 30ch; }
+.small { font-size: var(--t-small); font-weight: 500; line-height: 1.4; color: var(--ink-2); }
+.micro { font-size: var(--t-micro); font-weight: 500; color: var(--ink-3); }
+.hl    { color: var(--accent); }
+.hl-glow { color: var(--accent); text-shadow: 0 0 40px var(--accent-glow); }
+.grad  { background: linear-gradient(180deg, #fff 10%, var(--accent) 120%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.mark  { background: linear-gradient(transparent 58%, var(--accent-soft) 58%); padding: 0 .1em; }
+.wrong { color: var(--wrong); }
+.right { color: var(--right); }
+.stack > * + * { margin-top: var(--gap-4); }
+.grow { flex: 1; }
+.center-v { display: flex; flex-direction: column; justify-content: center; }
+
+/* ============================================================ components */
+.card {
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 44px 48px;
+  box-shadow: 0 30px 60px -30px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.05);
+}
+.card.focus { border-color: color-mix(in srgb, var(--accent) 55%, transparent); box-shadow: 0 0 0 1px var(--accent-soft), 0 0 80px -10px var(--accent-glow), 0 30px 60px -30px rgba(0,0,0,.7); }
+.card.dim   { opacity: .55; filter: saturate(.5); }
+
+.chip {
+  width: 104px; height: 104px; border-radius: var(--radius-sm); flex: none;
+  display: grid; place-items: center; font-size: 56px;
+  background: var(--accent-soft); color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.chip svg { width: 56px; height: 56px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* stat hero */
+.stat { font-size: var(--t-stat); font-weight: 900; line-height: .9; letter-spacing: -0.04em; direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
+.stat small { font-size: .38em; letter-spacing: 0; margin-inline-start: .08em; }
+
+/* comparison / VS */
+.vs { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; position: relative; }
+.vs .card { display: flex; flex-direction: column; gap: 22px; padding: 44px 36px; }
+.vs .badge {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 104px; height: 104px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--bg); border: 2px solid var(--line); font-weight: 900; font-size: 34px; color: var(--ink-2); direction: ltr;
+}
+.mark-x, .mark-v { width: 72px; height: 72px; border-radius: var(--radius-sm); display: grid; place-items: center; font-size: 44px; font-weight: 900; }
+.mark-x { background: rgba(255,108,0,.14); color: var(--wrong); }
+.mark-v { background: rgba(124,252,58,.14); color: var(--right); }
+
+/* checklist rows */
+.rows { display: flex; flex-direction: column; gap: 22px; }
+.row  { display: flex; align-items: center; gap: 28px; padding: 30px 36px; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--line); font-size: var(--t-body); font-weight: 700; }
+.row .n { font-weight: 900; color: var(--accent); min-width: 1.4em; direction: ltr; }
+
+/* flow / steps (vertical) */
+.flow { display: flex; flex-direction: column; gap: 0; }
+.step { display: flex; gap: 32px; align-items: flex-start; }
+.step .dot {
+  flex: none; width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center;
+  font-weight: 900; font-size: 38px; background: var(--surface-2); color: var(--ink-2); border: 2px solid var(--line); direction: ltr;
+}
+.step.on .dot { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 0 50px var(--accent-glow); }
+.step .txt { padding-top: 14px; }
+.step + .step { margin-top: 0; }
+.step .rail { width: 84px; display: flex; flex-direction: column; align-items: center; }
+.connector { width: 84px; height: 56px; display: flex; justify-content: center; }
+.connector::before { content: ""; width: 3px; background: linear-gradient(var(--accent), transparent); border-radius: 2px; }
+
+/* timeline (horizontal) */
+.timeline { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 12px; padding-top: 70px; }
+.timeline::before { content: ""; position: absolute; top: 28px; inset-inline: 0; height: 6px; border-radius: 3px; background: var(--surface-2); }
+.timeline::after  { content: ""; position: absolute; top: 28px; inset-inline-start: 0; width: var(--progress, 60%); height: 6px; border-radius: 3px; background: var(--accent); box-shadow: 0 0 30px var(--accent-glow); }
+.timeline .pt { position: relative; text-align: center; }
+.timeline .pt::before { content: ""; position: absolute; top: -52px; left: 50%; transform: translateX(-50%); width: 26px; height: 26px; border-radius: 50%; background: var(--surface-2); border: 4px solid var(--bg); z-index: 1; }
+.timeline .pt.on::before { background: var(--accent); box-shadow: 0 0 24px var(--accent-glow); }
+
+/* bars (simple data viz) */
+.bars { display: flex; flex-direction: column; gap: 26px; }
+.bar  { display: grid; grid-template-columns: 220px 1fr auto; align-items: center; gap: 24px; font-size: var(--t-small); font-weight: 700; }
+.bar .track { height: 30px; border-radius: 15px; background: var(--surface-2); overflow: hidden; }
+.bar .fill  { height: 100%; width: var(--v, 50%); border-radius: inherit; background: var(--ink-3); }
+.bar.on .fill { background: var(--accent); box-shadow: 0 0 30px var(--accent-glow); }
+.bar .val { direction: ltr; font-variant-numeric: tabular-nums; min-width: 3.2em; text-align: left; }
+
+/* chat mockup */
+.chat { display: flex; flex-direction: column; gap: 18px; }
+.bubble { max-width: 80%; padding: 26px 32px; border-radius: var(--radius); font-size: 38px; line-height: 1.35; font-weight: 500; }
+.bubble.them { align-self: flex-start; background: var(--surface-2); border-start-start-radius: 10px; }
+.bubble.me   { align-self: flex-end; background: var(--accent); color: var(--accent-ink); border-start-end-radius: 10px; font-weight: 700; }
+
+/* window / app mockup */
+.window { border-radius: var(--radius); overflow: hidden; background: #0d1220; border: 1px solid var(--line); box-shadow: 0 40px 80px -30px rgba(0,0,0,.8); }
+.window .bar-top { height: 64px; display: flex; gap: 12px; align-items: center; padding: 0 26px; background: #151b2c; direction: ltr; }
+.window .bar-top i { width: 18px; height: 18px; border-radius: 50%; background: #3a4258; }
+.window .content { padding: 40px; font-size: 34px; line-height: 1.5; }
+
+/* big quote mark for the one "big statement" slide */
+.quote-mark { font-size: 360px; line-height: .6; font-weight: 900; color: var(--accent); opacity: .9; height: 180px; }
+
+/* CTA keyword box */
+.keyword {
+  display: inline-block; padding: 30px 64px; border-radius: var(--radius-sm);
+  background: var(--accent); color: var(--accent-ink);
+  font-size: 96px; font-weight: 900; letter-spacing: .01em;
+  box-shadow: 0 0 90px var(--accent-glow);
+}
+
+/* ============================================================ PDF guide extras (.slide.a4) */
+.a4 .toc li { list-style: none; display: flex; justify-content: space-between; padding: 26px 0; border-bottom: 1px solid var(--line); font-size: 40px; font-weight: 700; }
+.a4 .toc li span:last-child { color: var(--accent); direction: ltr; }
+.a4 table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 32px; }
+.a4 th { text-align: start; font-weight: 800; color: var(--ink-2); padding: 20px 24px; border-bottom: 2px solid var(--accent); }
+.a4 td { padding: 22px 24px; border-bottom: 1px solid var(--line); }
+.a4 td.num { direction: ltr; text-align: left; font-variant-numeric: tabular-nums; }
+.a4 th.num { text-align: left; }
+/* no thick colored side-stripe (banned in impeccable): tinted surface + accent label does the job */
+.callout { background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); padding: 36px 44px; border-radius: var(--radius-sm); font-size: 34px; line-height: 1.55; }
+.callout b { color: var(--accent); }
+.footer { position: absolute; bottom: 60px; inset-inline: 120px; display: flex; justify-content: space-between; font-size: 24px; color: var(--ink-3); }
